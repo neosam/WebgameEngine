@@ -23,13 +23,9 @@ $(document).ready(function() {
                     "WEcoreObject.done must be true after init"); 
     });
 
-    module("Core functionality", {
-        setup: function() {
-        },
-        teardown: function() {
-        }
-    });
+    
 
+    module("Core functionality");
     test("Test init functions", function () {
         expect(2);
         WEcoreObject.initFuncs.push(function() {
@@ -42,23 +38,22 @@ $(document).ready(function() {
         WEQuit();
     });
 
-    test("Display functions (loop should run twice)", function() {
-        expect(4);
+    test("Testing gameloop calls", function() {
         stop();
+        firstCallExecuted = false;
+        secondCallExecuted = false;
         WEcoreObject.mainloopCalls.push(function() {
-            ok(true, 'First mainloop call function');
+            firstCallExecuted = true;
         });
         WEcoreObject.mainloopCalls.push(function() {
-            ok(true, 'Second mainloop call function');
-        });
-        WEcoreObject.mainloopCalls.push(function() {
-            if (!this['didRun'])
-                this.didRun = true;
-            else
-                WEQuit();
+            secondCallExecuted = true;
         });
         WEInit(100);
-        setTimeout(function() {start();}, 500);
+        setTimeout(function() {
+            same(firstCallExecuted, true, "First call must be executed");
+            same(secondCallExecuted, true, "Second call must be executed");
+            start();
+        }, 100);
     });
 
     test('Delegate functionality', function() {
