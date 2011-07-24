@@ -62,6 +62,12 @@ $(document).ready(function() {
         ok(true, "delegate.display(g) must take one argument and does nothing");
         myDelegate.keydown('anArgument');
         ok(true, "delegate.keydown(event) must take one argument and does nothing");
+        myDelegate.keyup('anArgument');
+        ok(true, "delegate.keyup(event) must take one argument and does nothing");
+        myDelegate.mousedown('anArgument');
+        ok(true, "delegate.mousedown(event) must take one argument and does nothing");
+        myDelegate.mouseup('anArgument');
+        ok(true, "delegate.mouseup(event) must take one argument and does nothing");
         WEInitCore(myDelegate);
         same(myDelegate, WEcoreObject.delegate, 
             "Delegate object must be set in WEcoreObject");
@@ -166,7 +172,8 @@ $(document).ready(function() {
 
 
     module("Event system"); 
-    test('key events (please press and release any key the next 5 secs)', function() {
+    test('key events', function() {
+        document.getElementById('notification').innerHTML = "Please press a key the next 5 seconds";
         myDelegate = new WEDelegate();
         var keydownReceived = false;
         var keyupReceived = false;
@@ -183,22 +190,46 @@ $(document).ready(function() {
             same(keyupReceived, true, "Should receive keyup event");
             start();
             WEQuit();
+            document.getElementById('notification').innerHTML = "";
         }, 5000);
     });
-    test('mousemotion event', function() {});
-    test('mousedown event', function() {});
-    test('mouseup event', function() {});
+
+    test('mousemotion event (TODO)', function() {
+    });
+    test('mousebutton events (click into page the next 5 secs)', function() {
+        document.getElementById('notification').innerHTML = "Please click the next 5 seconds";
+        myDelegate = new WEDelegate();
+        var mousedownReceived = false;
+        var mouseupReceived = false;
+        myDelegate.mousedown = function(evt) {
+            mousedownReceived = true;
+        }
+        myDelegate.mouseup = function(evt) {
+            mouseupReceived = true;
+        }
+        WEInitCore(myDelegate);
+        stop();
+        setTimeout(function() {
+            same(mousedownReceived, true, "Should receive mousedown event");
+            same(mouseupReceived, true, "Should receive mouseup event");
+            start();
+            WEQuit();
+            document.getElementById('notification').innerHTML = "";
+        }, 5000);
+    });
 });
 
 </script>
 </head>
 <body>
+<h1>Notification:</h1>
+<div id="notification"></div>
 <h1>WebGame Engine Unittests</h1>
 <div style="float:right;">
 <h2>Test gamefield</h2>
 <canvas style="border: 1px black solid;" id="testfield" width="320" height="240"></canvas>
 </div>
-</h2>Tests</h2>
+<h2>Tests</h2>
 <div style="display: block;"><ol id="qunit-tests"></ol></div>
 </body>
 </html>

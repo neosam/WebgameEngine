@@ -7,6 +7,8 @@ function WEDelegate() {
     self.display = function(g) {};
     self.keydown = function(evt) {};
     self.keyup = function(evt) {};
+    self.mousedown = function(evt) {};
+    self.mouseup = function(evt) {};
     return self;
 }
 
@@ -35,6 +37,8 @@ function WEInitCore(delegate) {
     });
     $(window).keydown(function(evt) { delegate.keydown(evt) }); 
     $(window).keyup(function(evt) { delegate.keyup(evt) }); 
+    $(window).mousedown(function(evt) { delegate.mousedown(evt) }); 
+    $(window).mouseup(function(evt) { delegate.mouseup(evt) }); 
     WEInit(33);
 }
 
