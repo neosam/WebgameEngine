@@ -5,6 +5,8 @@ WEcoreObject.done = "";
 
 function WEDelegate() {
     self.display = function(g) {};
+    self.keydown = function(evt) {};
+    self.keyup = function(evt) {};
     return self;
 }
 
@@ -31,6 +33,8 @@ function WEInitCore(delegate) {
     WEcoreObject.mainloopCalls.push(function() { 
         delegate.display(WEcoreObject.graphicContext); 
     });
+    $(window).keydown(function(evt) { delegate.keydown(evt) }); 
+    $(window).keyup(function(evt) { delegate.keyup(evt) }); 
     WEInit(33);
 }
 

@@ -61,10 +61,12 @@ $(document).ready(function() {
         setTimeout(function() {start();}, 500);
     });
 
-    test('Delegate functionality', function () {
+    test('Delegate functionality', function() {
         myDelegate = new WEDelegate();
         myDelegate.display('anArgument');
         ok(true, "delegate.display(g) must take one argument and does nothing");
+        myDelegate.keydown('anArgument');
+        ok(true, "delegate.keydown(event) must take one argument and does nothing");
         WEInitCore(myDelegate);
         same(myDelegate, WEcoreObject.delegate, 
             "Delegate object must be set in WEcoreObject");
@@ -166,6 +168,31 @@ $(document).ready(function() {
             WEQuit();
         }, 1000);
     });
+
+
+    module("Event system"); 
+    test('key events (please press and release any key the next 5 secs)', function() {
+        myDelegate = new WEDelegate();
+        var keydownReceived = false;
+        var keyupReceived = false;
+        myDelegate.keydown = function(evt) {
+            keydownReceived = true;
+        }
+        myDelegate.keyup = function(evt) {
+            keyupReceived = true;
+        }
+        WEInitCore(myDelegate);
+        stop();
+        setTimeout(function() {
+            same(keydownReceived, true, "Should receive keydown event");
+            same(keyupReceived, true, "Should receive keyup event");
+            start();
+            WEQuit();
+        }, 5000);
+    });
+    test('mousemotion event', function() {});
+    test('mousedown event', function() {});
+    test('mouseup event', function() {});
 });
 
 </script>
