@@ -1,0 +1,182 @@
+<html>
+<head>
+<title>Webgame Engine Unittests</title>
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script type="text/javascript" src="qunit.js"></script>
+<script type="text/javascript" src="webgame-engine.js"></script>
+<link rel="stylesheet" media="screen" href="qunit.css">
+<script type="text/javascript">
+
+$(document).ready(function() {
+    test("Try to just start the engine", function() {
+        //WEcoreObject.mainloopCalls.push(function() {alert('blub')});
+        WEInit(33);
+        ok(true, "Could start the engine");
+        same(WEcoreObject.done, false,
+                    "WEcoreObject.done must be false after init"); 
+    });
+
+    test("Try to end quit the engine", function() {
+        WEQuit();
+        ok(true, "Could quit the engine");
+        same(WEcoreObject.done, true,
+                    "WEcoreObject.done must be true after init"); 
+    });
+
+    module("Core functionality", {
+        setup: function() {
+        },
+        teardown: function() {
+        }
+    });
+
+    test("Test init functions", function () {
+        expect(2);
+        WEcoreObject.initFuncs.push(function() {
+            ok(true, 'First initfunction executed');
+        });
+        WEcoreObject.initFuncs.push(function() {
+            ok(true, 'Second initfunction executed');
+        });
+        WEInit(33);
+        WEQuit();
+    });
+
+    test("Display functions (loop should run twice)", function() {
+        expect(4);
+        stop();
+        WEcoreObject.mainloopCalls.push(function() {
+            ok(true, 'First mainloop call function');
+        });
+        WEcoreObject.mainloopCalls.push(function() {
+            ok(true, 'Second mainloop call function');
+        });
+        WEcoreObject.mainloopCalls.push(function() {
+            if (!this['didRun'])
+                this.didRun = true;
+            else
+                WEQuit();
+        });
+        WEInit(100);
+        setTimeout(function() {start();}, 500);
+    });
+
+    test('Delegate functionality', function () {
+        myDelegate = new WEDelegate();
+        myDelegate.display('anArgument');
+        ok(true, "delegate.display(g) must take one argument and does nothing");
+        WEInitCore(myDelegate);
+        same(myDelegate, WEcoreObject.delegate, 
+            "Delegate object must be set in WEcoreObject");
+        displayCalled = false;
+        myDelegate.display = function(g) {
+            displayCalled = true;
+        };
+        stop();
+        setTimeout(function() {
+            same(true, displayCalled, "Changing the display function must appear");
+            start();
+        }, 100);
+    });
+
+
+    module("2D functionality"); 
+    test('Test initialization and fill a rect', function () {
+        myDelegate = new WEDelegate();
+        myDelegate.display = function(g) {
+            g.fillRect(100, 100, 100, 100);
+        };
+        WEInit2D('testfield', myDelegate);
+        stop();
+        setTimeout(function() {
+            pixelInRect = WEcoreObject.graphicContext.getPixel(150, 150);
+            same(pixelInRect[0], 0, "Pixel 150, 150 red value must be 0");
+            same(pixelInRect[1], 0, "Pixel 150, 150 green value must be 0");
+            same(pixelInRect[2], 0, "Pixel 150, 150 blue value must be 0");
+            start();
+            WEQuit();
+        }, 1000);
+    });
+
+    test('Path drawing', function() {
+        myDelegate = new WEDelegate();
+        myDelegate.display = function(g) {
+            g.fillStyle = "#000";
+            g.fillRect(0, 0, 320, 240);
+            g.fillStyle = "#F00";
+            g.beginPath();
+            g.arc(100, 100, 50, 0, Math.PI * 2, true);
+            g.closePath();
+            g.fill();
+        }
+        WEInit2D('testfield', myDelegate);
+        stop();
+        setTimeout(function() {
+            pixelInRect = WEcoreObject.graphicContext.getPixel(100, 100);
+            same(pixelInRect[0], 255, "Pixel 100, 100 red value must be 255");
+            same(pixelInRect[1], 0, "Pixel 100, 100 green value must be 0");
+            same(pixelInRect[2], 0, "Pixel 100, 100 blue value must be 0");
+            start();
+            WEQuit();
+        }, 1000);
+    });
+
+    test('Pixel manipulation (invert image)', function() {
+        myDelegate = new WEDelegate();
+        myDelegate.display = function(g) {
+            g.fillStyle = "#000";
+            g.fillRect(0, 0, 320, 240);
+            imgd = g.getImageData(0, 0, 320, 240);
+            pix = imgd.data;
+            for (var i = 0; i < pix.length; i+=4) {
+                pix[i  ] = 255 - pix[i  ];
+                pix[i+1] = 255 - pix[i+1];
+                pix[i+2] = 255 - pix[i+2];
+                pix[i+3] = 128;
+            }
+            g.putImageData(imgd, 0, 0);
+        }
+        WEInit2D('testfield', myDelegate);
+        stop();
+        setTimeout(function() {
+            pixelInRect = WEcoreObject.graphicContext.getPixel(100, 100);
+            same(pixelInRect[0], 255, "Pixel 100, 100 red value must be 255");
+            same(pixelInRect[1], 255, "Pixel 100, 100 green value must be 255");
+            same(pixelInRect[2], 255, "Pixel 100, 100 blue value must be 255");
+            same(pixelInRect[3], 128, "Pixel 100, 100 alpha value must be 128");
+            start();
+            WEQuit();
+        }, 1000);
+    });
+
+    test('Draw images', function() {
+        myDelegate = new WEDelegate();
+        img = new Image();
+        img.src = 'logo.png';
+        myDelegate.display = function(g) {
+            g.fillStyle = "#FFF";
+            g.fillRect(0, 0, 320, 240);
+            g.drawImage(img, 0, 0);
+        }
+        WEInit2D('testfield', myDelegate);
+        stop();
+        setTimeout(function() {
+            ok(true, "Display image");
+            start();
+            WEQuit();
+        }, 1000);
+    });
+});
+
+</script>
+</head>
+<body>
+<h1>WebGame Engine Unittests</h1>
+<div style="float:right;">
+<h2>Test gamefield</h2>
+<canvas style="border: 1px black solid;" id="testfield" width="320" height="240"></canvas>
+</div>
+</h2>Tests</h2>
+<div style="display: block;"><ol id="qunit-tests"></ol></div>
+</body>
+</html>

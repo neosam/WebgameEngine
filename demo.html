@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Gametest</title>
+    <script type="text/javascript" src="webgame-engine.js"></script>
+    <script type="text/javascript">
+function init() {
+    var delegate = new WEDelegate();
+    delegate.display = function(g) {
+        g.fillRect(100, 100, 100, 100);
+    };
+    WEInit2D('canvasID', delegate);
+    //WEcoreObject.initFuncs.push(function() { alert('init2'); }); 
+    //WEcoreObject.mainloopCalls.push(function() { alert('mainloop'); }); 
+    //WEInit();
+}
+    </script>
+</head>
+<body onload="init()">
+<canvas id="canvasID" width="800" height="600"></canvas>
+</body>
+</html>
