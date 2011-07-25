@@ -6,14 +6,15 @@
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script type="text/javascript">
 
+var width;
+var height;
+
 var ship1;
 var ship2;
 
-var accelX = 3;
-var accelY = 3;
+var accel = 3;
 var maxSpeed = 21;
-var life1 = 100;
-var life2 = 100;
+var life = 100;
 var shots = 8;
 var shotSpeed = maxSpeed * 2 / 5;
 
@@ -25,41 +26,7 @@ for (var i = 0; i < shots; i++) {
     shots2[i] = false;
 }
 
-var x = 0;
-var y = 0;
-var xSpeed = 0;
-var ySpeed = 0;
-var x2 = 64;
-var y2 = 64;
-var xSpeed2 = 0;
-var ySpeed2 = 0;
-var direction1 = 0;
-var direction2 = 1;
-
-function damageBlue(damage) {
-    life1 -= damage;
-    document.getElementById('lifeBlue').innerHTML = life1;
-    if (life1 <= 0) {
-        alert('Red WON');
-        alert('Red WON');
-        alert('Red WON');
-        alert('Red WON');
-        alert('Red WON');
-    }
-}
-function damageRed(damage) {
-    life2 -= damage;
-    if (life2 <= 0) {
-        alert('Blue WON');
-        alert('Blue WON');
-        alert('Blue WON');
-        alert('Blue WON');
-        alert('Blue WON');
-    }
-    document.getElementById('lifeRed').innerHTML = life2;
-}
-
-function StarShip(prefix) {
+function StarShip(name, prefix) {
     /* Loading images */
     this.imgUp = new Image();
     this.imgDown = new Image();
@@ -75,19 +42,69 @@ function StarShip(prefix) {
 
     this.accelLeft = function() {
         this.image = this.imgLeft;
+        this.speedX -= accel;
+        this.direction = 1;
     }
     this.accelRight = function() {
         this.image = this.imgRight;
+        this.speedX += accel;
+        this.direction = 0;
     }
     this.accelUp = function() {
         this.image = this.imgUp;
+        this.speedY -= accel;
+        this.direction = 2;
     }
     this.accelDown = function() {
         this.image = this.imgDown;
+        this.speedY += accel;
+        this.direction = 3;
+    }
+    this.handleMaxSpeed = function() {
+        this.xSpeed = Math.min(this.xSpeed, this.maxSpeed);
+        this.ySpeed = Math.min(this.ySpeed, this.maxSpeed);
+        this.xSpeed = Math.max(this.xSpeed, -this.maxSpeed);
+        this.ySpeed = Math.max(this.ySpeed, -this.maxSpeed);
+    }
+
+    this.x = 0;
+    this.y = 0;
+    this.speedX = 0;
+    this.speedY = 0;
+    this.accel = accel;
+    this.maxSpeed = maxSpeed;
+    this.direction = 0;
+    this.life = life;
+
+    this.calculation = function() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+    }
+
+    this.draw = function(g) {
+        g.drawImage(this.image, this.x, this.y);
+    }
+
+    this.bounceCheck = function() {
+        if (this.x < 0 || this.x > (width - 64)) {
+            this.speedX *= -1;
+            this.damage(2);
+        }
+        if (this.y < 0 || this.y > (height - 64)) {
+            this.speedY *= -1;
+            this.damage(2);
+        }
+    }
+    this.damage = function(damage) {
+        this.life -= damage;
+        document.getElementById('life' + name).innerHTML = this.life;
+        if (this.life <= 0) {
+            WEQuit();
+        }
     }
 }
 
-function shoot(x, y, xSpeed, ySpeed, shotsArray, direction) {
+function shoot(ship, shotsArray) {
     shot = false;
     for (var i = 0; i < shots; i++) {
         if (shotsArray[i] == false) {
@@ -99,50 +116,49 @@ function shoot(x, y, xSpeed, ySpeed, shotsArray, direction) {
     if (shot == false)
         return;
         
-    shot.x = x + 24;
-    shot.y = y + 24;
+    shot.x = ship.x + 24;
+    shot.y = ship.y + 24;
     shot.xSpeed = 0;
     shot.ySpeed = 0;
-    if (direction == 0)
+    if (ship.direction == 0)
         shot.xSpeed += shotSpeed;
-    if (direction == 1)
+    if (ship.direction == 1)
         shot.xSpeed -= shotSpeed;
-    if (direction == 2)
+    if (ship.direction == 2)
         shot.ySpeed -= shotSpeed;
-    if (direction == 3)
+    if (ship.direction == 3)
         shot.ySpeed += shotSpeed;
 }
 
 function shootBlue() {
-    shoot(x, y, xSpeed, ySpeed, shots1, direction1);   
+    shoot(ship1, shots1);   
 }
 
 function shootRed() {
-    shoot(x2, y2, xSpeed2, ySpeed2, shots2, direction2);   
+    shoot(ship2, shots2);   
 }
 
 function init() {
     var canvas = document.getElementById('canvasID');
     width = canvas.width;
     height = canvas.height;
-    x2 = width - 64;
-    y2 = height - 64;
-    var delegate = new WEDelegate();
 
-    ship1 = new StarShip('demo-res/blueship');
+    ship1 = new StarShip('Blue', 'demo-res/blueship');
     ship1.image = ship1.imgRight;
-    ship2 = new StarShip('demo-res/redship');
+    ship2 = new StarShip('Red', 'demo-res/redship');
     ship2.image = ship2.imgLeft;
+    ship2.x = width - 64;
+    ship2.y = height - 64;
+    ship2.direction = 1;
 
+    var delegate = new WEDelegate();
     delegate.display = function(g) {
-        x += xSpeed;
-        y += ySpeed;
-        x2 += xSpeed2;
-        y2 += ySpeed2;
+        ship1.calculation();
+        ship2.calculation();
         g.fillStyle = "#666";
         g.fillRect(0, 0, width, height);
-        g.drawImage(ship1.image, x, y);
-        g.drawImage(ship2.image, x2, y2);
+        ship1.draw(g);
+        ship2.draw(g);
 
         for (var i = 0; i < shots; i++) {
             if (shots1[i] != false) {
@@ -152,70 +168,49 @@ function init() {
                 if (shots1[i].x < -16 || shots1[i].x > width
                   ||shots1[i].y < -16 || shots1[i].y > height)
                   shots1[i] = false;
-                dx = (x2 + 32) - (shots1[i].x + 8);
-                dy = (y2 + 32) - (shots1[i].y + 8);
+                dx = (ship2.x + 32) - (shots1[i].x + 8);
+                dy = (ship2.y + 32) - (shots1[i].y + 8);
                 dist = Math.sqrt(dx*dx + dy*dy);
                 if (dist < 32) {
                     shots1[i] = false;
-                    damageRed(10);
+                    ship2.damage(10);
                 }
             }
             if (shots2[i] != false) {
                 g.drawImage(ship2.shot, shots2[i].x, shots2[i].y);
                 shots2[i].x += shots2[i].xSpeed;
                 shots2[i].y += shots2[i].ySpeed;
+                
                 if (shots2[i].x < -16 || shots2[i].x > width
                   ||shots2[i].y < -16 || shots2[i].y > height)
                   shots2[i] = false;
-                dx = (x + 32) - (shots2[i].x + 8);
-                dy = (y + 32) - (shots2[i].y + 8);
+                dx = (ship1.x + 32) - (shots2[i].x + 8);
+                dy = (ship1.y + 32) - (shots2[i].y + 8);
                 dist = Math.sqrt(dx*dx + dy*dy);
                 if (dist < 32) {
                     shots2[i] = false;
-                    damageBlue(10);
+                    ship1.damage(10);
                 }
             }
         }
 
         /* bounce */
-        if (x < 0 || x > (width - 64)) {
-            xSpeed *= -1;
-            damageBlue(2);
-        }
-        if (y < 0 || y > (height - 64)) {
-            ySpeed *= -1;
-            damageBlue(2);
-        }
-        if (x2 < 0 || x2 > (width - 64)) {
-            xSpeed2 *= -1;
-            damageRed(2);
-        }
-        if (y2 < 0 || y2 > (height - 64)) {
-            ySpeed2 *= -1;
-            damageRed(2);
-        }
+        ship1.bounceCheck();
+        ship2.bounceCheck();
     };
     delegate.keydown = function(evt) {
         /* Blue player */
         if (evt.which == 87) {
             ship1.accelUp();
-            ySpeed -= 3;
-            direction1 = 2;
         }
         if (evt.which == 83) {
             ship1.accelDown();
-            ySpeed += 3;
-            direction1 = 3;
         }
         if (evt.which == 65) {
             ship1.accelLeft();
-            xSpeed -= 3;
-            direction1 = 1;
         }
         if (evt.which == 68) {
             ship1.accelRight();
-            xSpeed += 3;
-            direction1 = 0;
         }
         if (evt.which == 32) {
             shootBlue();
@@ -225,35 +220,21 @@ function init() {
         /* Red player */
         if (evt.which == 38) {
             ship2.accelUp();
-            ySpeed2 -= 3;
-            direction2 = 2;
         }
         if (evt.which == 40) {
             ship2.accelDown();
-            ySpeed2 += 3;
-            direction2 = 3;
         }
         if (evt.which == 37) {
             ship2.accelLeft();
-            xSpeed2 -= 3;
-            direction2 = 1;
         }
         if (evt.which == 39) {
             ship2.accelRight();
-            xSpeed2 += 3;
-            direction2 = 0;
         }
         if (evt.which == 13) {
             shootRed();
         }
-        xSpeed = Math.min(xSpeed, maxSpeed);
-        ySpeed = Math.min(ySpeed, maxSpeed);
-        xSpeed = Math.max(xSpeed, -maxSpeed);
-        ySpeed = Math.max(ySpeed, -maxSpeed);
-        xSpeed2 = Math.min(xSpeed2, maxSpeed);
-        ySpeed2 = Math.min(ySpeed2, maxSpeed);
-        xSpeed2 = Math.max(xSpeed2, -maxSpeed);
-        ySpeed2 = Math.max(ySpeed2, -maxSpeed);
+        ship1.handleMaxSpeed();
+        ship2.handleMaxSpeed();
     }
     WEInit2D('canvasID', delegate);
 }
