@@ -12,11 +12,16 @@ var height;
 var ship1;
 var ship2;
 
-var accel = 3;
-var maxSpeed = 21;
+var accel = .1;
+var maxSpeed = .4;
 var life = 100;
 var maxShots = 8;
 var shotSpeed = maxSpeed * 2 / 5;
+
+var begin;
+function gametime() {
+    return (new Date()).getTime() - begin;
+}
 
 function StarShip(name, prefix) {
     /* Loading images */
@@ -33,21 +38,33 @@ function StarShip(name, prefix) {
     this.image = this.imgUp;
 
     this.accelLeft = function() {
+        x = this.getX();
+        y = this.getY();
+        lastAction = gametime();
         this.image = this.imgLeft;
         this.speedX -= accel;
         this.direction = 1;
     }
     this.accelRight = function() {
+        x = this.getX();
+        y = this.getY();
+        lastAction = gametime();
         this.image = this.imgRight;
         this.speedX += accel;
         this.direction = 0;
     }
     this.accelUp = function() {
+        x = this.getX();
+        y = this.getY();
+        lastAction = gametime();
         this.image = this.imgUp;
         this.speedY -= accel;
         this.direction = 2;
     }
     this.accelDown = function() {
+        x = this.getX();
+        y = this.getY();
+        lastAction = gametime();
         this.image = this.imgDown;
         this.speedY += accel;
         this.direction = 3;
@@ -67,6 +84,7 @@ function StarShip(name, prefix) {
     this.maxSpeed = maxSpeed;
     this.direction = 0;
     this.life = life;
+    var lastAction = gametime();
 
     this.shots = new Array();
     this.maxShots = maxShots;
@@ -75,14 +93,15 @@ function StarShip(name, prefix) {
         this.shots[i] = false;
     }
 
-    this.getX = function() { return x; };
-    this.getY = function() { return y; };
-    this.setX = function(ax) { x = ax; };
-    this.setY = function(ay) { y = ay; };
+    this.lad = function() { return gametime() - lastAction; }; 
+    this.getX = function() { return x + this.speedX * this.lad(); };
+    this.getY = function() { return y + this.speedY * this.lad(); };
+    this.setX = function(ax) { x = ax; lastAction = gametime(); };
+    this.setY = function(ay) { y = ay; lastAction = gametime(); };
 
     this.calculation = function() {
-        x += this.speedX;
-        y += this.speedY;
+        //x += this.speedX;
+        //y += this.speedY;
     }
 
     this.draw = function(g) {
@@ -91,10 +110,16 @@ function StarShip(name, prefix) {
 
     this.bounceCheck = function() {
         if (this.getX() < 0 || this.getX() > (width - 64)) {
+            x = this.getX();
+            y = this.getY();
+            lastAction = gametime();
             this.speedX *= -1;
             this.damage(2);
         }
         if (this.getY() < 0 || this.getY() > (height - 64)) {
+            x = this.getX();
+            y = this.getY();
+            lastAction = gametime();
             this.speedY *= -1;
             this.damage(2);
         }
@@ -236,6 +261,11 @@ function init() {
         ship1.handleMaxSpeed();
         ship2.handleMaxSpeed();
     }
+    begin = (new Date()).getTime();
+    ship1.setX(0);
+    ship1.setY(0);
+    ship2.setX(width - 64);
+    ship2.setY(height - 64);
     WEInit2D('canvasID', delegate);
 }
     </script>
