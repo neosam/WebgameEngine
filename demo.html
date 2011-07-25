@@ -6,6 +6,9 @@
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script type="text/javascript">
 
+var ship1;
+var ship2;
+
 var accelX = 3;
 var accelY = 3;
 var maxSpeed = 21;
@@ -56,6 +59,34 @@ function damageRed(damage) {
     document.getElementById('lifeRed').innerHTML = life2;
 }
 
+function StarShip(prefix) {
+    /* Loading images */
+    this.imgUp = new Image();
+    this.imgDown = new Image();
+    this.imgLeft = new Image();
+    this.imgRight = new Image();
+    this.shot = new Image();
+    this.imgUp.src = prefix + "-up.png";
+    this.imgDown.src = prefix + "-down.png";
+    this.imgLeft.src = prefix + "-left.png";
+    this.imgRight.src = prefix + "-right.png";
+    this.shot.src = prefix + "-shot.png";
+    this.image = this.imgUp;
+
+    this.accelLeft = function() {
+        this.image = this.imgLeft;
+    }
+    this.accelRight = function() {
+        this.image = this.imgRight;
+    }
+    this.accelUp = function() {
+        this.image = this.imgUp;
+    }
+    this.accelDown = function() {
+        this.image = this.imgDown;
+    }
+}
+
 function shoot(x, y, xSpeed, ySpeed, shotsArray, direction) {
     shot = false;
     for (var i = 0; i < shots; i++) {
@@ -70,8 +101,8 @@ function shoot(x, y, xSpeed, ySpeed, shotsArray, direction) {
         
     shot.x = x + 24;
     shot.y = y + 24;
-    shot.xSpeed = 0;//xSpeed;
-    shot.ySpeed = 0;//ySpeed;
+    shot.xSpeed = 0;
+    shot.ySpeed = 0;
     if (direction == 0)
         shot.xSpeed += shotSpeed;
     if (direction == 1)
@@ -97,29 +128,12 @@ function init() {
     x2 = width - 64;
     y2 = height - 64;
     var delegate = new WEDelegate();
-    shipRightImg = new Image();
-    shipRightImg.src = "demo-res/ship-right.png";
-    shipLeftImg = new Image();
-    shipLeftImg.src = "demo-res/ship-left.png";
-    shipUpImg = new Image();
-    shipUpImg.src = "demo-res/ship-up.png";
-    shipDownImg = new Image();
-    shipDownImg.src = "demo-res/ship-down.png";
-    shipImage = shipRightImg;
-    shipRightImg2 = new Image();
-    shipRightImg2.src = "demo-res/ship-right2.png";
-    shipLeftImg2 = new Image();
-    shipLeftImg2.src = "demo-res/ship-left2.png";
-    shipUpImg2 = new Image();
-    shipUpImg2.src = "demo-res/ship-up2.png";
-    shipDownImg2 = new Image();
-    shipDownImg2.src = "demo-res/ship-down2.png";
-    shipImage2 = shipLeftImg2;
 
-    shot1Img = new Image();
-    shot2Img = new Image();
-    shot1Img.src = "shot1.png";
-    shot2Img.src = "shot2.png";
+    ship1 = new StarShip('demo-res/blueship');
+    ship1.image = ship1.imgRight;
+    ship2 = new StarShip('demo-res/redship');
+    ship2.image = ship2.imgLeft;
+
     delegate.display = function(g) {
         x += xSpeed;
         y += ySpeed;
@@ -127,12 +141,12 @@ function init() {
         y2 += ySpeed2;
         g.fillStyle = "#666";
         g.fillRect(0, 0, width, height);
-        g.drawImage(shipImage, x, y);
-        g.drawImage(shipImage2, x2, y2);
+        g.drawImage(ship1.image, x, y);
+        g.drawImage(ship2.image, x2, y2);
 
         for (var i = 0; i < shots; i++) {
             if (shots1[i] != false) {
-                g.drawImage(shot1Img, shots1[i].x, shots1[i].y);
+                g.drawImage(ship1.shot, shots1[i].x, shots1[i].y);
                 shots1[i].x += shots1[i].xSpeed;
                 shots1[i].y += shots1[i].ySpeed;
                 if (shots1[i].x < -16 || shots1[i].x > width
@@ -147,7 +161,7 @@ function init() {
                 }
             }
             if (shots2[i] != false) {
-                g.drawImage(shot2Img, shots2[i].x, shots2[i].y);
+                g.drawImage(ship2.shot, shots2[i].x, shots2[i].y);
                 shots2[i].x += shots2[i].xSpeed;
                 shots2[i].y += shots2[i].ySpeed;
                 if (shots2[i].x < -16 || shots2[i].x > width
@@ -184,22 +198,22 @@ function init() {
     delegate.keydown = function(evt) {
         /* Blue player */
         if (evt.which == 87) {
-            shipImage = shipUpImg;
+            ship1.accelUp();
             ySpeed -= 3;
             direction1 = 2;
         }
         if (evt.which == 83) {
-            shipImage = shipDownImg;
+            ship1.accelDown();
             ySpeed += 3;
             direction1 = 3;
         }
         if (evt.which == 65) {
-            shipImage = shipLeftImg;
+            ship1.accelLeft();
             xSpeed -= 3;
             direction1 = 1;
         }
         if (evt.which == 68) {
-            shipImage = shipRightImg;
+            ship1.accelRight();
             xSpeed += 3;
             direction1 = 0;
         }
@@ -210,22 +224,22 @@ function init() {
 
         /* Red player */
         if (evt.which == 38) {
-            shipImage2 = shipUpImg2;
+            ship2.accelUp();
             ySpeed2 -= 3;
             direction2 = 2;
         }
         if (evt.which == 40) {
-            shipImage2 = shipDownImg2;
+            ship2.accelDown();
             ySpeed2 += 3;
             direction2 = 3;
         }
         if (evt.which == 37) {
-            shipImage2 = shipLeftImg2;
+            ship2.accelLeft();
             xSpeed2 -= 3;
             direction2 = 1;
         }
         if (evt.which == 39) {
-            shipImage2 = shipRightImg2;
+            ship2.accelRight();
             xSpeed2 += 3;
             direction2 = 0;
         }
